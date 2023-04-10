@@ -1,3 +1,4 @@
+using System.IO;
 namespace ArinaCourseApp
 {
     public partial class Form1 : Form
@@ -10,46 +11,56 @@ namespace ArinaCourseApp
         }
 
 
-        private void textBox2_TextChanged(object sender, EventArgs e)
+        private void button3_Click(object sender, EventArgs e)
         {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*";
 
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                openFileDialog.Filter = "Text files (*.txt)|*.txt|Все файлы (*.*)|*.*";
-                openFileDialog.InitialDirectory = @"C:\";
-                openFileDialog.Title = "Выберите файл";
-                openFileDialog.CheckFileExists = true;
-                openFileDialog.CheckPathExists = true;
-
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                textBox3.Text = openFileDialog.FileName;
+                // чтение данных из файла и их передача в программу
+                using (StreamReader sr = new StreamReader(openFileDialog.FileName))
                 {
-                    textBox2.Text = openFileDialog.FileName;
+                    string input = sr.ReadToEnd(); // read the string from file
+                    string[] rows = input.Split('\n'); 
+                    int[,] array = new int[rows.Length, rows[0].Split(',').Length];
+
+                    for (int i = 0; i < rows.Length; i++)
+                    {
+                        string[] columns = rows[i].Split(',');
+                        for (int j = 0; j < columns.Length; j++)
+                        {
+                            int value;
+                            if (int.TryParse(columns[j], out value))
+                            {
+                                array[i, j] = value;
+                            }
+                        }
+                    }
+                    Alg mySol = new Alg();
+
+                    mySol.DoSmth(array);
+                    // обработка полученных данных
                 }
             }
-
+           
         }
 
-        private void button1_KeyPress(object sender, KeyPressEventArgs e)
+        private void button4_Click(object sender, EventArgs e)
         {
-            if (e.KeyChar == (char)Keys.Enter)
-            {
-                MessageBox.Show("Вы нажали Enter!", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
+            /* StreamReader reader = new StreamReader("C://Users//user//source//repos//ArinaCourseApp//ArinaCourseApp//bin//Debug//net6.0-windows//test.txt", System.Text.Encoding.UTF8);
+             string fileContent = reader.ReadToEnd();
+             reader.Close();
+             textBox4.Text = fileContent;*/
+            string filePath = "C://Users//user//source//repos//ArinaCourseApp//ArinaCourseApp//bin//Debug//net6.0-windows//test.txt";
+            string fileContents = File.ReadAllText(filePath);
+            richTextBox1.Text = fileContents;
         }
 
-        private void contextMenuStrip1_Opening(object sender, System.ComponentModel.CancelEventArgs e)
+        private void richTextBox1_TextChanged(object sender, EventArgs e)
         {
 
         }
-
-        private void Form1_Load(object sender, EventArgs e)
-        {
-            this.KeyPress += new KeyPressEventHandler(button1_KeyPress);
-        }
-
     }
 }

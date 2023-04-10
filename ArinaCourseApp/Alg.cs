@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace ArinaCourseApp
 {
@@ -90,13 +91,17 @@ namespace ArinaCourseApp
             }
 
             // Выводим цвета и количество используемых цветов
-            Console.WriteLine("Colors:");
+            string fileName = "test.txt";
+            string textToWrite = "Colors:\n";
             for (int i = 0; i < colors.Count; i++)
             {
-                Console.WriteLine($"{i}: {(colors[i] == -1 ? "uncolored" : colors[i].ToString())}");
+                textToWrite += ($"{i}: {(colors[i] == -1 ? "uncolored" : colors[i].ToString())}\n");
             }
             int numColors = colors.Max() + 1;
-            Console.WriteLine($"Number of colors used: {numColors}");
+            textToWrite += ($"\nNumber of colors used: {numColors}");
+            StreamWriter writer = new StreamWriter(fileName);
+            writer.WriteLine(textToWrite);
+            writer.Close();
         }
     }
 }
