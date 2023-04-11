@@ -53,8 +53,17 @@ namespace ArinaCourseApp
              string fileContent = reader.ReadToEnd();
              reader.Close();
              textBox4.Text = fileContent;*/
-            string filePath = "C://Users//user//source//repos//ArinaCourseApp//ArinaCourseApp//bin//Debug//net6.0-windows//test.txt";
+            /*string filePath = "C://Users//user//source//repos//ArinaCourseApp//ArinaCourseApp//bin//Debug//net6.0-windows//test.txt";
             string fileContents = File.ReadAllText(filePath);
+            richTextBox1.Text = fileContents;*/
+            OpenFileDialog fileDialog = new OpenFileDialog();
+            fileDialog.InitialDirectory = @"C:\";
+            fileDialog.Filter = "Text Files|*.txt|All Files|*.*";
+            if (fileDialog.ShowDialog() != DialogResult.OK)
+            {
+                return;
+            }
+            string fileContents = File.ReadAllText(fileDialog.FileName);
             richTextBox1.Text = fileContents;
         }
 
