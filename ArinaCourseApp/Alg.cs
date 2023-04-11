@@ -122,16 +122,26 @@ namespace ArinaCourseApp
             }
 
             // Выводим цвета и количество используемых цветов
-            string fileName = "test.txt";
+            //string fileName = "test.txt";
             string textToWrite = "Vertex\tColor\n";
             for (int i = 0; i < vertices; i++)
             {
                 textToWrite += (i + "\t" + colors[i] + "\n");
             }
             textToWrite += ("\nNumber of colors used: " + colorCount);
-            StreamWriter writer = new StreamWriter(fileName);
+            /*StreamWriter writer = new StreamWriter(fileName);
             writer.WriteLine(textToWrite);
-            writer.Close();
+            writer.Close();*/
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Title = "Save file";
+            saveFileDialog.Filter = "Text files (*.txt)|*.txt";
+            saveFileDialog.DefaultExt = "txt";
+            saveFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                string filePath = saveFileDialog.FileName;
+                File.WriteAllText(filePath, textToWrite);
+            }
 
             return colorCount;
         }
