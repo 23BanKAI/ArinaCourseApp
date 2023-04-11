@@ -38,7 +38,7 @@ namespace ArinaCourseApp
                             }
                         }
                     }
-                    Alg mySol = new Alg();
+                    Alg mySol = new Alg(9, array);
 
                     mySol.DoSmth(array);
                     // обработка полученных данных
@@ -58,9 +58,5 @@ namespace ArinaCourseApp
             richTextBox1.Text = fileContents;
         }
 
-        private void richTextBox1_TextChanged(object sender, EventArgs e)
-        {
-
-        }
     }
 }
