@@ -9,99 +9,145 @@ namespace ArinaCourseApp
 {
     internal class Alg
     {
-        public void DoSmth(int[,] adjacencyMatrix)
+        private int vertices;
+        private int[,] adjacencyMatrix;
+        public Alg(int v, int[,] adjMatrix)
         {
-            // Читаем матрицу смежности
-            int n = adjacencyMatrix.GetLength(0);
+            vertices = v;
+            adjacencyMatrix = adjMatrix;
+        }
+        // функция для получения матрицы инцидентности из матрицы смежности
+        public int[,] GetIncidenceMatrix()
+        {
+            int[,] incidenceMatrix = new int[vertices, vertices * (vertices - 1) / 2];
+            int k = 0;
 
-            // Преобразование матрицы смежности в матрицу инцидентности
-            int[,] incidenceMatrix = new int[n, n * (n - 1) / 2];
-            int index = 0;
-            for (int i = 0; i < n; i++)
+            for (int i = 0; i < vertices; i++)
             {
-                for (int j = i + 1; j < n; j++)
+                for (int j = i + 1; j < vertices; j++)
                 {
                     if (adjacencyMatrix[i, j] == 1)
                     {
-                        incidenceMatrix[i, index] = 1;
-                        incidenceMatrix[j, index] = 1;
-                        index++;
+                        incidenceMatrix[i, k] = 1;
+                        incidenceMatrix[j, k] = 1;
+                        k++;
                     }
                 }
             }
 
-            // Вычисление ДНФ (дизъюнктивная нормальная форма) матрицы инцидентности
-            List<List<int>> dnf = new List<List<int>>();
-            for (int i = 0; i < n; i++)
+            return incidenceMatrix;
+        }
+
+        // функция для получения дизъюнктивной нормальной формы (ДНФ) из матрицы инцидентности
+        public List<HashSet<int>> GetDNF(int[,] incidenceMatrix)
+        {
+            List<HashSet<int>> dnf = new List<HashSet<int>>();
+
+            for (int i = 0; i < incidenceMatrix.GetLength(1); i++)
             {
-                List<int> clause = new List<int>();
-                for (int j = 0; j < incidenceMatrix.GetLength(1); j++)
+                HashSet<int> term = new HashSet<int>();
+                for (int j = 0; j < vertices; j++)
                 {
-                    if (incidenceMatrix[i, j] == 1)
+                    if (incidenceMatrix[j, i] == 1)
                     {
-                        clause.Add(j);
+                        term.Add(j);
                     }
                 }
-                dnf.Add(clause);
+                dnf.Add(term);
             }
 
-            // Вычисляем недостающие вершины для каждого слагаемого в ДНФ
-            List<List<int>> missingVertices = new List<List<int>>();
+            return dnf;
+        }
+
+        // функция для записи недостающих вершин для каждого терма в ДНФ
+        public void WriteMissingVertices(ref List<HashSet<int>> dnf)
+        {
+            HashSet<int> complete = new HashSet<int>();
+            for (int i = 0; i < vertices; i++)
+            {
+                complete.Add(i);
+            }
+
             for (int i = 0; i < dnf.Count; i++)
             {
-                List<int> term = new List<int>(dnf[i]);
-                List<int> missing = new List<int>();
-                for (int v = 0; v < n; v++)
+                HashSet<int> missingVertices = new HashSet<int>(complete);
+                foreach (int v in dnf[i])
                 {
-                    bool found = false;
-                    for (int j = 0; j < term.Count; j++)
+                    missingVertices.Remove(v);
+                }
+                dnf[i].UnionWith(missingVertices);
+            }
+        }
+
+        // функция для раскрашивания графа с использованием результирующих наборов отсутствующих вершин
+        public int ColorGraph(List<HashSet<int>> missingVertices)
+        {
+            int[] colors = new int[vertices];
+            int colorCount = 1;
+
+            foreach (HashSet<int> set in missingVertices)
+            {
+                foreach (int v in set)
+                {
+                    HashSet<int> adjacentNodes = new HashSet<int>();
+                    for (int i = 0; i < vertices; i++)
                     {
-                        int e = term[j];
-                        if (incidenceMatrix[v, e] == 1)
+                        if (adjacencyMatrix[v, i] == 1)
                         {
-                            found = true;
-                            break;
+                            adjacentNodes.Add(i);
                         }
                     }
-                    if (!found)
-                    {
-                        missing.Add(v);
-                    }
-                }
-                missingVertices.Add(missing);
-            }
 
-            // Раскрашиваем вершины
-            List<int> colors = new List<int>();
-            for (int i = 0; i < missingVertices.Count; i++)
-            {
-                List<int> vertices = new List<int>(missingVertices[i]);
-                for (int j = 0; j < colors.Count; j++)
-                {
-                    vertices.RemoveAll(v => colors.IndexOf(v) != -1);
-                }
-                if (vertices.Count > 0)
-                {
-                    colors.Add(vertices[0]);
-                }
-                else
-                {
-                    colors.Add(-1); // Следим за неокрашенными вершинами
+                    HashSet<int> usedColors = new HashSet<int>();
+                    foreach (int adj in adjacentNodes)
+                    {
+                        if (colors[adj] != 0)
+                        {
+                            usedColors.Add(colors[adj]);
+                        }
+                    }
+
+                    int newColor = 1;
+                    while (usedColors.Contains(newColor))
+                    {
+                        newColor++;
+                    }
+
+                    colors[v] = newColor;
+                    if (newColor > colorCount)
+                    {
+                        colorCount = newColor;
+                    }
                 }
             }
 
             // Выводим цвета и количество используемых цветов
             string fileName = "test.txt";
-            string textToWrite = "Colors:\n";
-            for (int i = 0; i < colors.Count; i++)
+            string textToWrite = "Vertex\tColor\n";
+            for (int i = 0; i < vertices; i++)
             {
-                textToWrite += ($"{i}: {(colors[i] == -1 ? "uncolored" : colors[i].ToString())}\n");
+                textToWrite += (i + "\t" + colors[i] + "\n");
             }
-            int numColors = colors.Max() + 1;
-            textToWrite += ($"\nNumber of colors used: {numColors}");
+            textToWrite += ("\nNumber of colors used: " + colorCount);
             StreamWriter writer = new StreamWriter(fileName);
             writer.WriteLine(textToWrite);
             writer.Close();
+
+            return colorCount;
+        }
+
+        public void DoSmth(int[,] adjacencyMatrix)
+        {
+            int vertices = 9;
+
+            Alg g = new Alg(vertices, adjacencyMatrix);
+            int[,] incidenceMatrix = g.GetIncidenceMatrix();
+            List<HashSet<int>> dnf = g.GetDNF(incidenceMatrix);
+            g.WriteMissingVertices(ref dnf);
+            dnf.Sort((s1, s2) => -1 * s1.Count.CompareTo(s2.Count));
+            g.ColorGraph(dnf);
+
+           
         }
     }
 }
